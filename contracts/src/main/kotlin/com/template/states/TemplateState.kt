@@ -11,7 +11,6 @@ import net.corda.core.identity.Party
 // *********
 @BelongsToContract(TemplateContract::class)
 class IOUState(val name: Party,
-               val iouValue: Int,
                val age: Int,
                val address: String,
                val status: StatusEnums ) : ContractState {
