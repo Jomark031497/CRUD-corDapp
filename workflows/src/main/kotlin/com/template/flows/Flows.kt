@@ -2,7 +2,6 @@ package com.template.flows
 
 import co.paralleluniverse.fibers.Suspendable
 import net.corda.core.flows.*
-import net.corda.core.utilities.ProgressTracker
 
 // *********
 // * Flows *
@@ -10,7 +9,6 @@ import net.corda.core.utilities.ProgressTracker
 @InitiatingFlow
 @StartableByRPC
 class Initiator : FlowLogic<Unit>() {
-    override val progressTracker = ProgressTracker()
 
     @Suspendable
     override fun call() {
