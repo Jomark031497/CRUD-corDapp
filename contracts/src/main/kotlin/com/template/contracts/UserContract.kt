@@ -4,22 +4,30 @@ import net.corda.core.contracts.CommandData
 import net.corda.core.contracts.Contract
 import net.corda.core.transactions.LedgerTransaction
 
-// ************
-// * Contract *
-// ************
+/*
+The Contract
+*   Govern the ways in which states can evolve over time
+*   Contract execution is deterministic, and transaction acceptance is
+    based on the transaction’s contents alone.
+ */
+
+/*
+UserContract        Implements Contract requiring verify function that gets called
+                    to verify (hence the name) a transaction.
+
+ */
+
 class UserContract : Contract {
+
+    // This is used in other parts of Corda when reflection is required.
     companion object {
-        // Used to identify our contract when building a transaction.
         const val ID = "com.template.contracts.UserContract"
     }
 
-    // A transaction is valid if the verify() function of the contract of all the transaction's input and output states
-// does not throw an exception.
     override fun verify(tx: LedgerTransaction) {
-// Verification logic goes here.
+
     }
 
-    // Used to indicate the transaction's intent.
     interface Commands : CommandData {
         class Issue : Commands
     }
