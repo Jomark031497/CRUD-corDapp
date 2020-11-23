@@ -15,7 +15,7 @@ import net.corda.core.identity.Party
 class UserState(val name: String,
                 val age: Int,
                 val address: String,
-                val gender: String,
+                val gender: GenderEnums,
                 val node: Party,
                 val status: StatusEnums,
                 override val linearId: UniqueIdentifier,
