@@ -5,20 +5,26 @@ import com.template.contracts.UserContract
 import com.template.states.GenderEnums
 import com.template.states.StatusEnums
 import com.template.states.UserState
-import net.corda.core.contracts.*
+import net.corda.core.contracts.Command
+import net.corda.core.contracts.UniqueIdentifier
+import net.corda.core.contracts.requireThat
 import net.corda.core.flows.*
 import net.corda.core.identity.Party
+import net.corda.core.node.services.queryBy
+import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
+import javax.management.Query
 
 @InitiatingFlow
 @StartableByRPC
-class UpdateUserFlows(private val name :String,
+class UpdateUserFlow (private val name :String,
                       private val age : Int,
                       private val address : String,
                       private val gender: GenderEnums,
                       private val status : StatusEnums,
-                      private val counterParty: Party): FlowLogic<SignedTransaction>() {
+                      private val counterParty: Party,
+                      private val linearId: UniqueIdentifier) : FlowLogic<SignedTransaction>() {
 
     private fun userStates(): UserState {
         return UserState(
@@ -28,7 +34,7 @@ class UpdateUserFlows(private val name :String,
                 gender = gender,
                 status = status,
                 node = ourIdentity,
-                linearId = UniqueIdentifier(),
+                linearId = linearId,
                 participants = listOf(ourIdentity, counterParty)
         )
     }
@@ -43,11 +49,15 @@ class UpdateUserFlows(private val name :String,
     }
 
     private fun transaction(): TransactionBuilder {
+        val queryCriteria = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(linearId))
+        val settle = serviceHub.vaultService.queryBy<UserState>(queryCriteria).states.single()
+
         val notary: Party = serviceHub.networkMapCache.notaryIdentities.first()
-        val issueCommand = Command(UserContract.Commands.Issue(), userStates().participants.map { it.owningKey })
+        val updateCommand = Command(UserContract.Commands.Update(), userStates().participants.map { it.owningKey })
         val builder = TransactionBuilder(notary = notary)
+        builder.addInputState(settle)
         builder.addOutputState(userStates(), UserContract.ID)
-        builder.addCommand(issueCommand)
+        builder.addCommand(updateCommand)
         return builder
     }
 
@@ -55,7 +65,6 @@ class UpdateUserFlows(private val name :String,
         transaction.verify(serviceHub)
         return serviceHub.signInitialTransaction(transaction)
     }
-
 
     @Suspendable
     private fun collectSignature(
@@ -68,16 +77,16 @@ class UpdateUserFlows(private val name :String,
             subFlow(FinalityFlow(transaction, sessions))
 }
 
-//@InitiatedBy(Initiator::class)
-//class FlowResponder(val flowSession: FlowSession) : FlowLogic<SignedTransaction>() {
-//
-//    @Suspendable
-//    override fun call(): SignedTransaction {
-//        val signTransactionFlow = object : SignTransactionFlow(flowSession) {
-//            override fun checkTransaction(stx: SignedTransaction) = requireThat {
-//            }
-//        }
-//        val signedTransaction = subFlow(signTransactionFlow)
-//        return subFlow(ReceiveFinalityFlow(otherSideSession = flowSession, expectedTxId = signedTransaction.id))
-//    }
-//}
+@InitiatedBy(UpdateUserFlow::class)
+class UpdateFlowResponder(val flowSession: FlowSession) : FlowLogic<SignedTransaction>() {
+
+    @Suspendable
+    override fun call(): SignedTransaction {
+        val signTransactionFlow = object : SignTransactionFlow(flowSession) {
+            override fun checkTransaction(stx: SignedTransaction) = requireThat {
+            }
+        }
+        val signedTransaction = subFlow(signTransactionFlow)
+        return subFlow(ReceiveFinalityFlow(otherSideSession = flowSession, expectedTxId = signedTransaction.id))
+    }
+}

@@ -73,7 +73,6 @@ class UserFlows (private val name :String,
         val issueCommand = Command(UserContract.Commands.Issue(), userStates().participants.map { it.owningKey })
         val builder = TransactionBuilder(notary = notary)
 
-//contract sa userID
         builder.addOutputState(userStates(), UserContract.ID)
         builder.addCommand(issueCommand)
         return builder
