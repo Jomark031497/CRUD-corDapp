@@ -30,7 +30,7 @@ call                When the flow is triggered, call is executed and any logic t
  */
 @InitiatingFlow
 @StartableByRPC
-class UserFlows (private val name :String,
+class UserFlow (private val name :String,
                  private val age : Int,
                  private val address : String,
                  private val gender: GenderEnums,
@@ -59,7 +59,7 @@ class UserFlows (private val name :String,
         return recordTransaction(transactionSignedByAllParties, sessions)
     }
 
-    /*
+    /**
     notary:
     * serviceHub          :provided since we extended FlowLogic
     * networkMapCache     :provide the identities of the parties on the network
@@ -78,25 +78,34 @@ class UserFlows (private val name :String,
         return builder
     }
 
+    /**
+     * Verify and sign the transaction
+     */
     private fun verifyAndSign(transaction: TransactionBuilder): SignedTransaction {
         transaction.verify(serviceHub)
         return serviceHub.signInitialTransaction(transaction)
     }
 
+    /**
+     * Collect the signatures of the involved parties
+     */
     @Suspendable
     private fun collectSignature(
             transaction: SignedTransaction,
             sessions: List<FlowSession>
     ): SignedTransaction = subFlow(CollectSignaturesFlow(transaction, sessions))
 
+    /**
+     * Record the transaction to the vault
+     */
     @Suspendable
     private fun recordTransaction(transaction: SignedTransaction, sessions: List<FlowSession>): SignedTransaction =
             subFlow(FinalityFlow(transaction, sessions))
 }
 
 
-@InitiatedBy(UserFlows::class)
-class IOUIssueFlowResponder(val flowSession: FlowSession) : FlowLogic<SignedTransaction>() {
+@InitiatedBy(UserFlow::class)
+class UserFlowResponder(val flowSession: FlowSession) : FlowLogic<SignedTransaction>() {
 
     @Suspendable
     override fun call(): SignedTransaction {
