@@ -53,13 +53,13 @@ class UpdateUserFlow (private val name :String,
 
         // Retrieve the state from the vault.
         val queryCriteria = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(linearId))
-        val settle = serviceHub.vaultService.queryBy<UserState>(queryCriteria).states.single()
+        val getVault = serviceHub.vaultService.queryBy<UserState>(queryCriteria).states.single()
         val notary: Party = serviceHub.networkMapCache.notaryIdentities.first()
         val updateCommand = Command(UserContract.Commands.Update(), userStates().participants.map { it.owningKey })
         val builder = TransactionBuilder(notary = notary)
 
         // add the fetched state as input.
-        builder.addInputState(settle)
+        builder.addInputState(getVault)
         builder.addOutputState(userStates(), UserContract.ID)
         builder.addCommand(updateCommand)
         return builder
