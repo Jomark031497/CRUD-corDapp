@@ -4,5 +4,5 @@ import net.corda.core.serialization.CordaSerializable
 
 @CordaSerializable
 enum class StatusEnums {
-    SINGLE, MARRIED
+    SINGLE, MARRIED, UNDISCLOSED
 }
