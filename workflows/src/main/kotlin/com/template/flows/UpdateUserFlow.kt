@@ -49,35 +49,6 @@ class UpdateUserFlow (private val name :String,
         return recordTransaction(transactionSignedByAllParties, sessions)
     }
 
-//    private fun transaction(dataState: StateAndRef<UserState>): TransactionBuilder {
-//
-//        val queryCriteria = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(linearId))
-//        val dataStateAndRef = serviceHub.vaultService.queryBy<UserState>(queryCriteria).states.single()
-//        val notary: Party = serviceHub.networkMapCache.notaryIdentities.first()
-//        val updateCommand = Command(UserContract.Commands.Update(), userStates().participants.map { it.owningKey })
-//        val builder = TransactionBuilder(notary = notary)
-//
-//        builder
-//                .addInputState(dataState)
-//                .addOutputState(userStates(), UserContract.ID)
-//                .addCommand(updateCommand)
-//        return builder
-//    }
-
-//    private fun verifyAndSign(transaction: TransactionBuilder): SignedTransaction {
-//        transaction.verify(serviceHub)
-//        return serviceHub.signInitialTransaction(transaction)
-//    }
-//
-//    @Suspendable
-//    private fun collectSignature(
-//            transaction: SignedTransaction,
-//            sessions: List<FlowSession>
-//    ): SignedTransaction = subFlow(CollectSignaturesFlow(transaction, sessions))
-//
-//    @Suspendable
-//    private fun recordTransaction(transaction: SignedTransaction, sessions: List<FlowSession>): SignedTransaction =
-//            subFlow(FinalityFlow(transaction, sessions))
 }
 
 @InitiatedBy(UpdateUserFlow::class)
