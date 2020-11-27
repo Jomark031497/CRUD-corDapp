@@ -30,7 +30,7 @@ call                When the flow is triggered, call is executed and any logic t
  */
 @InitiatingFlow
 @StartableByRPC
-class UserFlow (private val name :String,
+class UserFlow ( private val name :String,
                  private val age : Int,
                  private val address : String,
                  private val gender: GenderEnums,
@@ -45,6 +45,7 @@ class UserFlow (private val name :String,
                 gender = gender,
                 status = status,
                 node = ourIdentity,
+                isDeleted = false,
                 linearId = UniqueIdentifier(),
                 participants = listOf(ourIdentity, counterParty)
         )

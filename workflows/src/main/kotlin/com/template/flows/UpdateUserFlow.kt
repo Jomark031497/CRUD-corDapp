@@ -14,7 +14,6 @@ import net.corda.core.node.services.queryBy
 import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
-import javax.management.Query
 
 @InitiatingFlow
 @StartableByRPC
@@ -58,6 +57,7 @@ class UpdateUserFlow (private val name :String,
         val updateCommand = Command(UserContract.Commands.Update(), userStates().participants.map { it.owningKey })
         val builder = TransactionBuilder(notary = notary)
 
+
         // add the fetched state as input.
         builder.addInputState(dataStateAndRef)
         builder.addOutputState(userStates(), UserContract.ID)
@@ -89,6 +89,9 @@ class UpdateFlowResponder(val flowSession: FlowSession) : FlowLogic<SignedTransa
         val signTransactionFlow = object : SignTransactionFlow(flowSession)
                 {
             override fun checkTransaction(stx: SignedTransaction) = requireThat {
+
+
+
             }
         }
         val signedTransaction = subFlow(signTransactionFlow)

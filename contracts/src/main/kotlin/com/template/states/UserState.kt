@@ -35,6 +35,7 @@ class UserState(val name: String,
                 val gender: GenderEnums,
                 val node: Party,
                 val status: StatusEnums,
+                val isDeleted: Boolean = false,
                 override val linearId: UniqueIdentifier,
                 override val participants : List<Party>
 ) : LinearState
