@@ -50,18 +50,16 @@ class UpdateUserFlow (private val name :String,
 
     private fun transaction(): TransactionBuilder {
 
-        // Retrieve the state from the vault.
         val queryCriteria = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(linearId))
         val dataStateAndRef = serviceHub.vaultService.queryBy<UserState>(queryCriteria).states.single()
         val notary: Party = serviceHub.networkMapCache.notaryIdentities.first()
         val updateCommand = Command(UserContract.Commands.Update(), userStates().participants.map { it.owningKey })
         val builder = TransactionBuilder(notary = notary)
 
-
-        // add the fetched state as input.
-        builder.addInputState(dataStateAndRef)
-        builder.addOutputState(userStates(), UserContract.ID)
-        builder.addCommand(updateCommand)
+        builder
+                .addInputState(dataStateAndRef)
+                .addOutputState(userStates(), UserContract.ID)
+                .addCommand(updateCommand)
         return builder
     }
 
@@ -89,9 +87,6 @@ class UpdateFlowResponder(val flowSession: FlowSession) : FlowLogic<SignedTransa
         val signTransactionFlow = object : SignTransactionFlow(flowSession)
                 {
             override fun checkTransaction(stx: SignedTransaction) = requireThat {
-
-
-
             }
         }
         val signedTransaction = subFlow(signTransactionFlow)
