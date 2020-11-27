@@ -15,6 +15,7 @@ import net.corda.core.node.services.queryBy
 import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
+import java.util.*
 
 abstract class BaseFlow : FlowLogic<SignedTransaction>(){
 
@@ -57,10 +58,6 @@ abstract class BaseFlow : FlowLogic<SignedTransaction>(){
             transaction: SignedTransaction,
             sessions: List<FlowSession>
     ): SignedTransaction = subFlow(CollectSignaturesFlow(transaction, sessions))
-
-    @Suspendable
-    fun recordTransaction(transaction: SignedTransaction): SignedTransaction =
-            subFlow(FinalityFlow(transaction))
 
     @Suspendable
     fun recordTransaction(transaction: SignedTransaction, sessions: List<FlowSession>): SignedTransaction =
