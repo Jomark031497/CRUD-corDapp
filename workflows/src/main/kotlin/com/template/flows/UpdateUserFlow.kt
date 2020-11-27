@@ -6,6 +6,7 @@ import com.template.states.GenderEnums
 import com.template.states.StatusEnums
 import com.template.states.UserState
 import net.corda.core.contracts.Command
+import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.contracts.requireThat
 import net.corda.core.flows.*
@@ -23,7 +24,7 @@ class UpdateUserFlow (private val name :String,
                       private val gender: GenderEnums,
                       private val status : StatusEnums,
                       private val counterParty: Party,
-                      private val linearId: UniqueIdentifier) : FlowLogic<SignedTransaction>() {
+                      private val linearId: UniqueIdentifier) : BaseFlow() {
 
     // Added linearId to use as reference when updating the past state
     private fun userStates(): UserState {
@@ -41,42 +42,42 @@ class UpdateUserFlow (private val name :String,
 
     @Suspendable
     override fun call(): SignedTransaction {
-        val transaction: TransactionBuilder = transaction()
+        val transaction: TransactionBuilder = transaction(userStates(), getVaultData(linearId))
         val signedTransaction: SignedTransaction = verifyAndSign(transaction)
         val sessions: List<FlowSession> = (userStates().participants - ourIdentity).map { initiateFlow(it) }.toSet().toList()
         val transactionSignedByAllParties: SignedTransaction = collectSignature(signedTransaction, sessions)
         return recordTransaction(transactionSignedByAllParties, sessions)
     }
 
-    private fun transaction(): TransactionBuilder {
+//    private fun transaction(dataState: StateAndRef<UserState>): TransactionBuilder {
+//
+//        val queryCriteria = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(linearId))
+//        val dataStateAndRef = serviceHub.vaultService.queryBy<UserState>(queryCriteria).states.single()
+//        val notary: Party = serviceHub.networkMapCache.notaryIdentities.first()
+//        val updateCommand = Command(UserContract.Commands.Update(), userStates().participants.map { it.owningKey })
+//        val builder = TransactionBuilder(notary = notary)
+//
+//        builder
+//                .addInputState(dataState)
+//                .addOutputState(userStates(), UserContract.ID)
+//                .addCommand(updateCommand)
+//        return builder
+//    }
 
-        val queryCriteria = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(linearId))
-        val dataStateAndRef = serviceHub.vaultService.queryBy<UserState>(queryCriteria).states.single()
-        val notary: Party = serviceHub.networkMapCache.notaryIdentities.first()
-        val updateCommand = Command(UserContract.Commands.Update(), userStates().participants.map { it.owningKey })
-        val builder = TransactionBuilder(notary = notary)
-
-        builder
-                .addInputState(dataStateAndRef)
-                .addOutputState(userStates(), UserContract.ID)
-                .addCommand(updateCommand)
-        return builder
-    }
-
-    private fun verifyAndSign(transaction: TransactionBuilder): SignedTransaction {
-        transaction.verify(serviceHub)
-        return serviceHub.signInitialTransaction(transaction)
-    }
-
-    @Suspendable
-    private fun collectSignature(
-            transaction: SignedTransaction,
-            sessions: List<FlowSession>
-    ): SignedTransaction = subFlow(CollectSignaturesFlow(transaction, sessions))
-
-    @Suspendable
-    private fun recordTransaction(transaction: SignedTransaction, sessions: List<FlowSession>): SignedTransaction =
-            subFlow(FinalityFlow(transaction, sessions))
+//    private fun verifyAndSign(transaction: TransactionBuilder): SignedTransaction {
+//        transaction.verify(serviceHub)
+//        return serviceHub.signInitialTransaction(transaction)
+//    }
+//
+//    @Suspendable
+//    private fun collectSignature(
+//            transaction: SignedTransaction,
+//            sessions: List<FlowSession>
+//    ): SignedTransaction = subFlow(CollectSignaturesFlow(transaction, sessions))
+//
+//    @Suspendable
+//    private fun recordTransaction(transaction: SignedTransaction, sessions: List<FlowSession>): SignedTransaction =
+//            subFlow(FinalityFlow(transaction, sessions))
 }
 
 @InitiatedBy(UpdateUserFlow::class)
