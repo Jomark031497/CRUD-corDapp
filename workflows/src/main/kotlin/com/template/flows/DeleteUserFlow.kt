@@ -18,19 +18,18 @@ import net.corda.core.transactions.TransactionBuilder
 @StartableByRPC
 class DeleteUserFlow(private val linearId: UniqueIdentifier): FlowLogic<SignedTransaction>() {
 
-
-
     private fun userStates(dataState : StateAndRef<UserState>): UserState {
+        val data = dataState.state.data
         return UserState(
-                name = dataState.state.data.name,
-                age = dataState.state.data.age,
-                address = dataState.state.data.address,
-                gender = dataState.state.data.gender,
-                status = dataState.state.data.status,
+                name = data.name,
+                age = data.age,
+                address = data.address,
+                gender = data.gender,
+                status = data.status,
                 isDeleted =  true,
                 node = ourIdentity,
                 linearId = linearId,
-                participants = dataState.state.data.participants
+                participants = data.participants
         )
     }
 
@@ -41,7 +40,6 @@ class DeleteUserFlow(private val linearId: UniqueIdentifier): FlowLogic<SignedTr
 
     @Suspendable
     override fun call(): SignedTransaction {
-
         val transaction: TransactionBuilder = transaction()
         val signedTransaction: SignedTransaction = verifyAndSign(transaction)
         val sessions: List<FlowSession> = (userStates(getVaultData()).participants - ourIdentity).map { initiateFlow(it) }.toSet().toList()
@@ -55,13 +53,12 @@ class DeleteUserFlow(private val linearId: UniqueIdentifier): FlowLogic<SignedTr
         val updateCommand = Command(UserContract.Commands.Update(), userStates(getVaultData()).participants.map { it.owningKey })
         val builder = TransactionBuilder(notary = notary)
 
-        // add the fetched state as input.
-        builder.addInputState(getVaultData())
-        builder.addOutputState(userStates(getVaultData()), UserContract.ID)
-        builder.addCommand(updateCommand)
+        builder
+                .addInputState(getVaultData())
+                .addOutputState(userStates(getVaultData()), UserContract.ID)
+                .addCommand(updateCommand)
         return builder
     }
-
 
     private fun verifyAndSign(transaction: TransactionBuilder): SignedTransaction {
         transaction.verify(serviceHub)
@@ -87,8 +84,6 @@ class DebuggingFlowResponder(val flowSession: FlowSession) : FlowLogic<SignedTra
         val signTransactionFlow = object : SignTransactionFlow(flowSession)
         {
             override fun checkTransaction(stx: SignedTransaction) = requireThat {
-
-
 
             }
         }
