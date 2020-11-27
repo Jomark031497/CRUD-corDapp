@@ -35,30 +35,29 @@ class UpdateNameFlow(   private val name: String,
         )
     }
 
+    private fun getVaultData() : StateAndRef<UserState> {
+        val queryCriteria = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(linearId))
+        return serviceHub.vaultService.queryBy<UserState>(queryCriteria).states.single()
+    }
+
     @Suspendable
     override fun call(): SignedTransaction {
-        val queryCriteria = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(linearId))
-        val dataStateAndRef = serviceHub.vaultService.queryBy<UserState>(queryCriteria).states.single()
+
         val transaction: TransactionBuilder = transaction()
         val signedTransaction: SignedTransaction = verifyAndSign(transaction)
-        val sessions: List<FlowSession> = (userStates(dataStateAndRef).participants - ourIdentity).map { initiateFlow(it) }.toSet().toList()
+        val sessions: List<FlowSession> = (userStates(getVaultData()).participants - ourIdentity).map { initiateFlow(it) }.toSet().toList()
         val transactionSignedByAllParties: SignedTransaction = collectSignature(signedTransaction, sessions)
         return recordTransaction(transactionSignedByAllParties, sessions)
     }
 
-
     private fun transaction(): TransactionBuilder {
-        val queryCriteria = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(linearId))
-        val dataStateAndRef = serviceHub.vaultService.queryBy<UserState>(queryCriteria).states.single()
 
-        // Retrieve the state from the vault.
         val notary: Party = serviceHub.networkMapCache.notaryIdentities.first()
-        val updateCommand = Command(UserContract.Commands.Update(), userStates(dataStateAndRef).participants.map { it.owningKey })
+        val updateCommand = Command(UserContract.Commands.Update(), userStates(getVaultData()).participants.map { it.owningKey })
         val builder = TransactionBuilder(notary = notary)
 
-        // add the fetched state as input.
-        builder.addInputState(dataStateAndRef)
-        builder.addOutputState(userStates(dataStateAndRef), UserContract.ID)
+        builder.addInputState(getVaultData())
+        builder.addOutputState(userStates(getVaultData()), UserContract.ID)
         builder.addCommand(updateCommand)
         return builder
     }
