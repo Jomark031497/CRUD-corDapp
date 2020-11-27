@@ -21,8 +21,7 @@ class CreateUserOwnNodesWithoutOtherParty (private val name :String,
                                            private val age : Int,
                                            private val address : String,
                                            private val gender : GenderEnums,
-                                           private val status : StatusEnums): FlowLogic<SignedTransaction>() {
-
+                                           private val status : StatusEnums): BaseFlow() {
 
     private fun userStates(): UserState {
         return UserState(
@@ -39,27 +38,10 @@ class CreateUserOwnNodesWithoutOtherParty (private val name :String,
 
     @Suspendable
     override fun call(): SignedTransaction {
-        val transaction: TransactionBuilder = transaction()
+        val transaction: TransactionBuilder = transaction(userStates())
         val transactionSignedByAllParties: SignedTransaction = verifyAndSign(transaction)
         return recordTransaction(transactionSignedByAllParties)
     }
 
-    private fun transaction(): TransactionBuilder {
-        val notary: Party = serviceHub.networkMapCache.notaryIdentities.first()
-        val issueCommand = Command(UserContract.Commands.Issue(), ourIdentity.owningKey)
-        val builder = TransactionBuilder(notary = notary)
-        builder.addOutputState(userStates(), UserContract.ID)
-        builder.addCommand(issueCommand)
-        return builder
-    }
-
-    private fun verifyAndSign(transaction: TransactionBuilder): SignedTransaction {
-        transaction.verify(serviceHub)
-        return serviceHub.signInitialTransaction(transaction)
-    }
-
-    @Suspendable
-    private fun recordTransaction(transaction: SignedTransaction): SignedTransaction =
-            subFlow(FinalityFlow(transaction, emptyList()))
 }
 
