@@ -42,6 +42,7 @@ class UpdateUserFlow (private val name :String,
 
     @Suspendable
     override fun call(): SignedTransaction {
+
         val transaction: TransactionBuilder = transaction(userStates(), getVaultData(linearId))
         val signedTransaction: SignedTransaction = verifyAndSign(transaction)
         val sessions: List<FlowSession> = (userStates().participants - ourIdentity).map { initiateFlow(it) }.toSet().toList()

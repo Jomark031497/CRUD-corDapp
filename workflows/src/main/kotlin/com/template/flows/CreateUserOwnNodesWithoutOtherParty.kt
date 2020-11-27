@@ -11,6 +11,7 @@ import net.corda.core.flows.*
 import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
+import java.util.*
 
 // *********
 // Flows
@@ -40,7 +41,7 @@ class CreateUserOwnNodesWithoutOtherParty (private val name :String,
     override fun call(): SignedTransaction {
         val transaction: TransactionBuilder = transaction(userStates())
         val transactionSignedByAllParties: SignedTransaction = verifyAndSign(transaction)
-        return recordTransaction(transactionSignedByAllParties)
+        return recordTransaction(transactionSignedByAllParties, Collections.emptyList())
     }
 
 }
