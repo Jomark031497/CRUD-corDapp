@@ -40,6 +40,7 @@ class DeleteUserFlow(private val linearId: UniqueIdentifier): FlowLogic<SignedTr
 
     @Suspendable
     override fun call(): SignedTransaction {
+
         val transaction: TransactionBuilder = transaction()
         val signedTransaction: SignedTransaction = verifyAndSign(transaction)
         val sessions: List<FlowSession> = (userStates(getVaultData()).participants - ourIdentity).map { initiateFlow(it) }.toSet().toList()
@@ -47,16 +48,15 @@ class DeleteUserFlow(private val linearId: UniqueIdentifier): FlowLogic<SignedTr
         return recordTransaction(transactionSignedByAllParties, sessions)
     }
 
-
     private fun transaction(): TransactionBuilder {
         val notary: Party = serviceHub.networkMapCache.notaryIdentities.first()
-        val updateCommand = Command(UserContract.Commands.Update(), userStates(getVaultData()).participants.map { it.owningKey })
+        val deleteCommand = Command(UserContract.Commands.Delete(), userStates(getVaultData()).participants.map { it.owningKey })
         val builder = TransactionBuilder(notary = notary)
 
         builder
                 .addInputState(getVaultData())
                 .addOutputState(userStates(getVaultData()), UserContract.ID)
-                .addCommand(updateCommand)
+                .addCommand(deleteCommand)
         return builder
     }
 
@@ -66,9 +66,7 @@ class DeleteUserFlow(private val linearId: UniqueIdentifier): FlowLogic<SignedTr
     }
 
     @Suspendable
-    private fun collectSignature(
-            transaction: SignedTransaction,
-            sessions: List<FlowSession>
+    private fun collectSignature(transaction: SignedTransaction, sessions: List<FlowSession>
     ): SignedTransaction = subFlow(CollectSignaturesFlow(transaction, sessions))
 
     @Suspendable
@@ -84,7 +82,6 @@ class DebuggingFlowResponder(val flowSession: FlowSession) : FlowLogic<SignedTra
         val signTransactionFlow = object : SignTransactionFlow(flowSession)
         {
             override fun checkTransaction(stx: SignedTransaction) = requireThat {
-
             }
         }
         val signedTransaction = subFlow(signTransactionFlow)
