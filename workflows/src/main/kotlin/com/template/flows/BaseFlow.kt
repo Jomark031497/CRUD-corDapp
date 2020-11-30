@@ -19,6 +19,12 @@ import java.util.*
 
 abstract class BaseFlow : FlowLogic<SignedTransaction>(){
 
+
+    /**
+     * returnType   :       StateAndRef<T>
+     * parameters   :       linearId
+     * DESC         :       Pass a linearId to this function and it will fetch the first data
+     */
     fun getVaultData(linearId: UniqueIdentifier) : StateAndRef<UserState> {
         val queryCriteria = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(linearId))
         return serviceHub.vaultService.queryBy<UserState>(queryCriteria).states.single()
@@ -35,7 +41,7 @@ abstract class BaseFlow : FlowLogic<SignedTransaction>(){
     }
 
     fun transaction(state: UserState,
-                            dataState: StateAndRef<UserState>): TransactionBuilder {
+                    dataState: StateAndRef<UserState>): TransactionBuilder {
 
         val notary: Party = serviceHub.networkMapCache.notaryIdentities.first()
         val updateCommand = Command(UserContract.Commands.Update(), state.participants.map { it.owningKey })
