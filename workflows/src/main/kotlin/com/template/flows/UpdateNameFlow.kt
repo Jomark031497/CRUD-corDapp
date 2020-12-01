@@ -1,7 +1,7 @@
 package com.template.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.template.states.UserState
+import com.template.contractsandstates.UserState
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.contracts.requireThat

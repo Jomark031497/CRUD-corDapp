@@ -1,7 +1,8 @@
-package com.template.states
+package com.template.contractsandstates
 
 
-import com.template.contracts.UserContract
+import com.template.contractsandstates.Enums.GenderEnums
+import com.template.contractsandstates.Enums.StatusEnums
 import net.corda.core.contracts.BelongsToContract
 import net.corda.core.contracts.LinearState
 import net.corda.core.contracts.UniqueIdentifier

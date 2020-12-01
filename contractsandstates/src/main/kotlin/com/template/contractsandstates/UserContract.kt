@@ -1,9 +1,7 @@
-package com.template.contracts
+package com.template.contractsandstates
 
 import net.corda.core.contracts.CommandData
 import net.corda.core.contracts.Contract
-import net.corda.core.contracts.requireSingleCommand
-import net.corda.core.contracts.requireThat
 import net.corda.core.transactions.LedgerTransaction
 
 /**
@@ -22,7 +20,7 @@ class UserContract : Contract {
 
     /** This is used in other parts of Corda when reflection is required. */
     companion object {
-        const val ID = "com.template.contracts.UserContract"
+        const val ID = "com.template.ContractsAndStates.UserContract"
     }
 
     override fun verify(tx: LedgerTransaction) {

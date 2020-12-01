@@ -1,4 +1,4 @@
-package com.template.states
+package com.template.contractsandstates.Enums
 
 import net.corda.core.serialization.CordaSerializable
 
